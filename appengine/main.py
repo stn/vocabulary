@@ -16,19 +16,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import defaultdict
 import os
-import re
-import urllib
-from collections import Counter
 
-from google.appengine.api import users
-from google.appengine.ext import ndb
-
-import csv
-import json
 import jinja2
 import webapp2
+from google.appengine.api import users
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
