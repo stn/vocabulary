@@ -20,7 +20,8 @@ import os
 
 import jinja2
 import webapp2
-from google.appengine.api import users
+
+from db import Document
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -31,24 +32,42 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 class MainPage(webapp2.RequestHandler):
 
     def get(self):
-        user = users.get_current_user()
-        if user:
-            url = users.create_logout_url(self.request.uri)
-            url_linktext = 'Logout'
-        else:
-            url = users.create_login_url(self.request.uri)
-            url_linktext = 'Login'
-
+        documents = Document.get_all_with_namespace()
         template_values = {
-            'user': user,
-            'url': url,
-            'url_linktext': url_linktext,
+            'documents': documents,
         }
-
         template = JINJA_ENVIRONMENT.get_template('index.html')
         self.response.write(template.render(template_values))
 
 
+class EditDocumentPage(webapp2.RequestHandler):
+
+    def get(self):
+        id = self.request.get('id')
+        if id == '':
+            document = Document.new()
+        else:
+            document = Document.get_with_namespace(int(id))
+        template_values = {
+            'document': document,
+        }
+        template = JINJA_ENVIRONMENT.get_template('edit_document.html')
+        self.response.write(template.render(template_values))
+
+    def post(self):
+        id = self.request.get('id')
+        if id == '':
+            document = Document.new()
+        else:
+            document = Document.get_with_namespace(int(id))
+        document.title = self.request.get('title')
+        document.content = self.request.get('content')
+        Document.put_with_namespace(document)
+        self.redirect('/')
+
+
 app = webapp2.WSGIApplication([
     ('/', MainPage),
+    ('/new', EditDocumentPage),
+    ('/save', EditDocumentPage),
 ], debug=True)
