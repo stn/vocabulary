@@ -1,0 +1,30 @@
+{% extends 'template.html' %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-9">
+            <h1>{{ document.title }}</h1>
+            <div>
+                {{ document.content }}
+            </div>
+        </div>
+        <div class="col-md-3">
+            {% if document.key %}
+            <form action="/doc/edit" method="GET">
+                <input type="hidden" name="id" value="{{ document.key.id() }}"/>
+                <input type="submit" class="btn btn-primary" value="edit">
+            </form>
+            {% endif %}
+        </div>
+        <div class="col-md-3">
+            {% if document.key %}
+            <form action="/doc/delete" method="POST">
+                <input type="hidden" name="id" value="{{ document.key.id() }}"/>
+                <input type="submit" class="btn btn-danger" value="delete">
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    <!-- [END documents] -->
+</div>
+{% endblock %}

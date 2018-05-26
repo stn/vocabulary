@@ -3,7 +3,7 @@
 <div class="container">
     <div class="row">
         <div class="col-md-9">
-            <form action="/save" method="post">
+            <form action="/doc/save" method="post">
                 <div class="form-group">
                     <input value="{{ document.title }}" name="title" class="form-control">
                 </div>
@@ -19,7 +19,7 @@
         </div>
         <div class="col-md-3">
             {% if document.key %}
-            <form action="/delete" method="POST">
+            <form action="/doc/delete" method="POST">
                 <input type="hidden" name="id" value="{{ document.key.id() }}"/>
                 <input type="submit" class="btn btn-danger" value="delete">
             </form>

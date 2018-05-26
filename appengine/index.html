@@ -4,7 +4,7 @@
     <div class="row">
         {% for document in documents %}
         <div class="col-md-9">
-            <a href="/note?id={{ document.key.id() }}">
+            <a href="/doc/{{ document.key.id() }}">
                 {% if document.title %}
                 <b>{{ document.title }}</b>
                 {% else %}
@@ -15,7 +15,7 @@
         </div>
         {% endfor %}
         <div class="sidebar col-md-3">
-            <div><a class="btn btn-larage btn-primary" href="/new">New</a></div>
+            <div><a class="btn btn-larage btn-primary" href="/doc/new">New</a></div>
         </div>
 
     </div>

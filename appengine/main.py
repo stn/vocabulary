@@ -29,7 +29,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
-class MainPage(webapp2.RequestHandler):
+class MainPageHandler(webapp2.RequestHandler):
 
     def get(self):
         documents = Document.get_all_with_namespace()
@@ -40,7 +40,19 @@ class MainPage(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 
 
-class EditDocumentPage(webapp2.RequestHandler):
+class ShowDocumentHandler(webapp2.RequestHandler):
+
+    def get(self, *args):
+        id = args[0]
+        document = Document.get_with_namespace(int(id))
+        template_values = {
+            'document': document,
+        }
+        template = JINJA_ENVIRONMENT.get_template('document_show.html')
+        self.response.write(template.render(template_values))
+
+
+class EditDocumentHandler(webapp2.RequestHandler):
 
     def get(self):
         id = self.request.get('id')
@@ -51,7 +63,7 @@ class EditDocumentPage(webapp2.RequestHandler):
         template_values = {
             'document': document,
         }
-        template = JINJA_ENVIRONMENT.get_template('edit_document.html')
+        template = JINJA_ENVIRONMENT.get_template('document_edit.html')
         self.response.write(template.render(template_values))
 
     def post(self):
@@ -67,7 +79,9 @@ class EditDocumentPage(webapp2.RequestHandler):
 
 
 app = webapp2.WSGIApplication([
-    ('/', MainPage),
-    ('/new', EditDocumentPage),
-    ('/save', EditDocumentPage),
+    ('/', MainPageHandler),
+    ('/doc/(\d+)', ShowDocumentHandler),
+    ('/doc/new', EditDocumentHandler),
+    ('/doc/edit', EditDocumentHandler),
+    ('/doc/save', EditDocumentHandler),
 ], debug=True)
