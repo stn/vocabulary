@@ -78,10 +78,30 @@ class EditDocumentHandler(webapp2.RequestHandler):
         self.redirect('/')
 
 
+class DeleteDocumentHandler(webapp2.RequestHandler):
+
+    def post(self):
+        id = self.request.get('id')
+        if id == '':
+            # Error
+            self.redirect('/')
+            return
+
+        document = Document.get_with_namespace(int(id))
+        if document is None:
+            # Error
+            self.redirect('/')
+            return
+
+        document.key.delete()
+        self.redirect('/')
+
+
 app = webapp2.WSGIApplication([
     ('/', MainPageHandler),
     ('/doc/(\d+)', ShowDocumentHandler),
     ('/doc/new', EditDocumentHandler),
     ('/doc/edit', EditDocumentHandler),
     ('/doc/save', EditDocumentHandler),
+    ('/doc/delete', DeleteDocumentHandler),
 ], debug=True)
