@@ -16,12 +16,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import os
 
 import jinja2
 import webapp2
 
-from db import Document
+import process
+from db import Document, Word
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -45,6 +47,8 @@ class ShowDocumentHandler(webapp2.RequestHandler):
     def get(self, *args):
         id = args[0]
         document = Document.get_with_namespace(int(id))
+        processor = process.Processor()
+        processor.process_document(document)
         template_values = {
             'document': document,
         }
@@ -97,6 +101,37 @@ class DeleteDocumentHandler(webapp2.RequestHandler):
         self.redirect('/')
 
 
+class WordHandler(webapp2.RequestHandler):
+
+    def get(self):
+        word_name = self.request.get('name')
+        if word_name == '':
+            self.redirect('/')
+            return
+
+        word = Word.get_by_name_or_new_with_namespace(word_name)
+        template_values = {
+            'word': word,
+        }
+        template = JINJA_ENVIRONMENT.get_template('word.html')
+        self.response.write(template.render(template_values))
+
+    def post(self):
+        word_name = self.request.get('name')
+        if word_name == '':
+            payload = {'success': False}
+            return self.response.write(json.dumps(payload))
+        word_name = word_name.lower()
+
+        word = Word.get_by_name_or_new_with_namespace(word_name)
+        word.conjugative = self.request.get('conjugative').split()
+        word.content = self.request.get('content')
+        word.known = self.request.get('known') == 'known'
+        Word.put_with_namespace(word)
+        payload = {'success': True}
+        return self.response.write(json.dumps(payload))
+
+
 app = webapp2.WSGIApplication([
     ('/', MainPageHandler),
     ('/doc/(\d+)', ShowDocumentHandler),
@@ -104,4 +139,5 @@ app = webapp2.WSGIApplication([
     ('/doc/edit', EditDocumentHandler),
     ('/doc/save', EditDocumentHandler),
     ('/doc/delete', DeleteDocumentHandler),
+    ('/word', WordHandler),
 ], debug=True)

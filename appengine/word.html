@@ -1,0 +1,20 @@
+<form id="wordForm" action="/word?name={{ word.name }}" method="post">
+    <div class="form-group">
+        <input value="{{ word.name }}" name="name" class="form-control">
+    </div>
+    <div class="form-group">
+        <input value="{{ word.conjugative|join(' ') }}" name="conjugative" class="form-control">
+    </div>
+    <div class="form-group">
+        <textarea name="content" class="form-control"
+                  rows="10">{{ word.content if word.content is not none }}</textarea>
+    </div>
+    <div class="form-check">
+        <label for="knownCheck" class="form-check-label">
+            <input class="form-check-input" id="knownCheck" type="checkbox" value="known" name="known" {% if word.known
+                   %}checked{% endif %}>
+            Known
+        </label>
+    </div>
+    <br>
+</form>
