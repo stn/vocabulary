@@ -20,7 +20,7 @@ $('#deleteWord').on('click', function (e) {
     e.preventDefault();
     var form = $('#wordForm');
     $.ajax({
-        url: '/delete_word',
+        url: '/word/delete',
         type: form.attr('method'),
         data: form.serialize(),
         success: function () {

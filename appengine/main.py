@@ -132,6 +132,24 @@ class WordHandler(webapp2.RequestHandler):
         return self.response.write(json.dumps(payload))
 
 
+class DeleteWordHandler(webapp2.RequestHandler):
+
+    def post(self):
+        word_name = self.request.get('name')
+        if word_name == '':
+            payload = {'success': False}
+            return self.response.write(json.dumps(payload))
+        word_name = word_name.lower()
+
+        word = Word.get_by_name_or_new_with_namespace(word_name)
+        if word is None:
+            payload = {'success': False}
+            return self.response.write(json.dumps(payload))
+        word.key.delete()
+        payload = {'success': True}
+        return self.response.write(json.dumps(payload))
+
+
 app = webapp2.WSGIApplication([
     ('/', MainPageHandler),
     ('/doc/(\d+)', ShowDocumentHandler),
@@ -140,4 +158,5 @@ app = webapp2.WSGIApplication([
     ('/doc/save', EditDocumentHandler),
     ('/doc/delete', DeleteDocumentHandler),
     ('/word', WordHandler),
+    ('/word/delete', DeleteWordHandler)
 ], debug=True)
