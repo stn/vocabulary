@@ -1,6 +1,6 @@
 # coding:utf-8
 
-#!/usr/bin/env python
+# !/usr/bin/env python
 
 # Copyright 2018 Akira Ishino.
 #
@@ -150,6 +150,30 @@ class DeleteWordHandler(webapp2.RequestHandler):
         return self.response.write(json.dumps(payload))
 
 
+class ListWordsHandler(webapp2.RequestHandler):
+
+    def get(self):
+        words = Word.get_all_words()
+        words = sorted(words, key=lambda w: w.name)
+
+        count_known = 0
+        count_unknown = 0
+        for word in words:
+            if word.known:
+                count_known += 1
+            else:
+                count_unknown += 1
+
+        template_values = {
+            'words': words,
+            'count_known': count_known,
+            'count_unknown': count_unknown,
+        }
+
+        template = JINJA_ENVIRONMENT.get_template('words.html')
+        self.response.write(template.render(template_values))
+
+
 app = webapp2.WSGIApplication([
     ('/', MainPageHandler),
     ('/doc/(\d+)', ShowDocumentHandler),
@@ -158,5 +182,6 @@ app = webapp2.WSGIApplication([
     ('/doc/save', EditDocumentHandler),
     ('/doc/delete', DeleteDocumentHandler),
     ('/word', WordHandler),
-    ('/word/delete', DeleteWordHandler)
+    ('/word/delete', DeleteWordHandler),
+    ('/words', ListWordsHandler)
 ], debug=True)

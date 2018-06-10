@@ -78,6 +78,18 @@ class Word(ndb.Model):
             namespace_manager.set_namespace(previous_namespace)
 
     @classmethod
+    def get_all_words(cls):
+        user = users.get_current_user()
+        previous_namespace = namespace_manager.get_namespace()
+        try:
+            namespace_manager.set_namespace(user.email().translate(NAMESPACE_TRANS))
+            qry = Word.query()
+            words = qry.fetch()
+        finally:
+            namespace_manager.set_namespace(previous_namespace)
+        return words
+
+    @classmethod
     def get_all_known_words(cls):
         user = users.get_current_user()
         previous_namespace = namespace_manager.get_namespace()

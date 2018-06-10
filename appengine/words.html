@@ -1,0 +1,27 @@
+{% extends 'template.html' %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-9">
+            <table class="table table-sm">
+                <tr>
+                    <th>Word</th>
+                    <th>Meanings</th>
+                </tr>
+                {% for word in words %}
+                <tr>
+                    <td><a href="/word?name={{ word.name }}"
+                           class="{% if word.known %}known{% else %}unknown{% endif %}" data-toggle="modal"
+                           data-target="#wordModal">{{ word.name }}</a></td>
+                    <td>{{ word.content }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="col-md-3">
+            <div>#Known: {{ count_known }}</div>
+            <div>#Unknown: {{ count_unknown }}</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
