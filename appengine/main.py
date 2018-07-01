@@ -16,8 +16,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import csv
+from datetime import datetime
 import json
 import os
+import StringIO
 
 import jinja2
 import webapp2
@@ -174,6 +177,42 @@ class ListWordsHandler(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 
 
+class BackupWordsHandler(webapp2.RequestHandler):
+
+    def get(self):
+        self.response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        self.response.headers['Content-Disposition'] = 'attachment; filename=backup_words.json'
+
+        words = Word.get_all_words()
+        words = sorted(words, key=lambda w: w.name)
+
+        for word in words:
+            obj = {}
+            obj['name'] = word.name
+            obj['conjugative'] = [conj for conj in word.conjugative]
+            obj['content'] = word.content
+            obj['known'] = word.known
+            obj['date'] = word.date.strftime("%Y/%m/%d %H:%M:%S")
+            self.response.out.write(json.dumps(obj, ensure_ascii=False).encode('utf-8'))
+            self.response.out.write('\n')
+
+
+class RestoreWordsHandler(webapp2.RequestHandler):
+
+    def post(self):
+        reader = StringIO.StringIO(self.request.get('json'))
+        for row in reader:
+            obj = json.loads(row)
+            self.response.out.write(obj['name'])
+            self.response.out.write('<br>')
+            word = Word.get_by_name_or_new_with_namespace(obj['name'])
+            word.conjugative = obj['conjugative']
+            word.content = obj['content']
+            word.known = obj['known']
+            word.date = datetime.strptime(obj['date'], '%Y/%m/%d %H:%M:%S')
+            Word.put_with_namespace(word)
+
+
 app = webapp2.WSGIApplication([
     ('/', MainPageHandler),
     ('/doc/(\d+)', ShowDocumentHandler),
@@ -183,5 +222,7 @@ app = webapp2.WSGIApplication([
     ('/doc/delete', DeleteDocumentHandler),
     ('/word', WordHandler),
     ('/word/delete', DeleteWordHandler),
-    ('/words', ListWordsHandler)
+    ('/words', ListWordsHandler),
+    ('/words/backup', BackupWordsHandler),
+    ('/words/restore', RestoreWordsHandler),
 ], debug=True)

@@ -21,6 +21,12 @@
         <div class="col-md-3">
             <div>#Known: {{ count_known }}</div>
             <div>#Unknown: {{ count_unknown }}</div>
+            <div>
+                <form action="/words/restore" method="post" enctype="multipart/form-data">
+                    <input type="file" name="json" />
+                    <input type="submit" value="Restore" />
+                </form>
+            </div>
         </div>
     </div>
 </div>
