@@ -201,6 +201,7 @@ class RestoreWordsHandler(webapp2.RequestHandler):
 
     def post(self):
         reader = StringIO.StringIO(self.request.get('json'))
+        words = []
         for row in reader:
             obj = json.loads(row)
             self.response.out.write(obj['name'])
@@ -210,7 +211,8 @@ class RestoreWordsHandler(webapp2.RequestHandler):
             word.content = obj['content']
             word.known = obj['known']
             word.date = datetime.strptime(obj['date'], '%Y/%m/%d %H:%M:%S')
-            Word.put_with_namespace(word)
+            words.append(word)
+        Word.put_multi_with_namespace(words)
 
 
 app = webapp2.WSGIApplication([
