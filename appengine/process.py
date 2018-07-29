@@ -8,6 +8,9 @@ from db import Word
 REF_PAT = re.compile(ur'([a-zA-Z]+)(\d+([-–,]\d+)*)$', re.UNICODE)
 WORD_PAT = re.compile(r'[a-zA-Z]+')
 
+COLLOCATION_LEN = 20
+NUM_COLLOCATIONS = 100
+
 
 class Processor(object):
 
@@ -111,3 +114,20 @@ class Processor(object):
 
     def unknown_word_link(self, word, orig):
         return '<a href="/word?name=' + orig + '" class="unknown" data-toggle="modal" data-target="#wordModal">' + word + '</a>'
+
+    @staticmethod
+    def build_collocation(text, collocations):
+        index = 0
+        while True:
+            m = WORD_PAT.search(text[index:])
+            if m:
+                word = m.group(0)
+                if len(word) > 2 and len(collocations[word.lower()]) < NUM_COLLOCATIONS:
+                    s = index + m.start()
+                    prefix = text[max(0, s - COLLOCATION_LEN):s].ljust(COLLOCATION_LEN)
+                    suffix = text[s + len(word):s + len(word) + COLLOCATION_LEN]
+                    collocations[word.lower()].append(prefix + word + suffix)
+                index += m.end()
+            else:
+                break
+        return collocations

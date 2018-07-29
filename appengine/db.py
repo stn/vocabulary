@@ -191,4 +191,50 @@ class Collocation(ndb.Model):
     """A model for representing a collocation."""
     name = ndb.StringProperty()
     collocation = ndb.TextProperty()
-    date = ndb.DateTimeProperty(auto_now_add=True)
+
+    @classmethod
+    def get_with_namespace(cls, id):
+        user = users.get_current_user()
+        previous_namespace = namespace_manager.get_namespace()
+        try:
+            namespace_manager.set_namespace(user.email().translate(NAMESPACE_TRANS))
+            coll = Collocation.get_by_id(id)
+        finally:
+            namespace_manager.set_namespace(previous_namespace)
+        return coll
+
+    @classmethod
+    def get_by_name_or_new_with_namespace(cls, name):
+        user = users.get_current_user()
+        previous_namespace = namespace_manager.get_namespace()
+        try:
+            namespace_manager.set_namespace(user.email().translate(NAMESPACE_TRANS))
+            qry = Collocation.query(Collocation.name == name)
+            coll = qry.get()
+            if coll is None:
+                coll = Collocation()
+                coll.name = name
+                coll.content = ''
+        finally:
+            namespace_manager.set_namespace(previous_namespace)
+        return coll
+
+    @classmethod
+    def put_with_namespace(cls, coll):
+        user = users.get_current_user()
+        previous_namespace = namespace_manager.get_namespace()
+        try:
+            namespace_manager.set_namespace(user.email().translate(NAMESPACE_TRANS))
+            coll.put()
+        finally:
+            namespace_manager.set_namespace(previous_namespace)
+
+    @classmethod
+    def put_multi_with_namespace(cls, colls):
+        user = users.get_current_user()
+        previous_namespace = namespace_manager.get_namespace()
+        try:
+            namespace_manager.set_namespace(user.email().translate(NAMESPACE_TRANS))
+            ndb.put_multi(colls)
+        finally:
+            namespace_manager.set_namespace(previous_namespace)

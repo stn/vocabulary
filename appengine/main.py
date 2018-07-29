@@ -16,23 +16,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import defaultdict
 import csv
 from datetime import datetime
 import json
 import os
+import re
 import StringIO
 
 import jinja2
 import webapp2
 
-import process
-from db import Document, Word
+from process import Processor
+from db import Document, Word, Collocation
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
-
 
 class MainPageHandler(webapp2.RequestHandler):
 
@@ -50,7 +51,7 @@ class ShowDocumentHandler(webapp2.RequestHandler):
     def get(self, *args):
         id = args[0]
         document = Document.get_with_namespace(int(id))
-        processor = process.Processor()
+        processor = Processor()
         processor.process_document(document)
         template_values = {
             'document': document,
@@ -215,6 +216,27 @@ class RestoreWordsHandler(webapp2.RequestHandler):
         Word.put_multi_with_namespace(words)
 
 
+class UpdateCollocationHandler(webapp2.RequestHandler):
+
+    def get(self):
+        documents = Document.get_all_with_namespace()
+        text = ''
+        for document in documents:
+            collocations = defaultdict(list)
+            text = re.sub(r'[\r\n]', ' ', document.content)
+            collocations = Processor.build_collocation(text, collocations)
+
+        colls = []
+        for k, v in collocations.items():
+            coll = Collocation.get_by_name_or_new_with_namespace(k)
+            coll.collocation = '\n'.join(v)
+            colls.append(coll)
+        Collocation.put_multi_with_namespace(colls)
+
+        payload = {'success': True}
+        return self.response.write(json.dumps(payload))
+
+
 app = webapp2.WSGIApplication([
     ('/', MainPageHandler),
     ('/doc/(\d+)', ShowDocumentHandler),
@@ -227,4 +249,5 @@ app = webapp2.WSGIApplication([
     ('/words', ListWordsHandler),
     ('/words/backup', BackupWordsHandler),
     ('/words/restore', RestoreWordsHandler),
+    ('/collocation/update', UpdateCollocationHandler),
 ], debug=True)
