@@ -112,10 +112,22 @@ class WordHandler(webapp2.RequestHandler):
         if word_name == '':
             self.redirect('/')
             return
-
         word = Word.get_by_name_or_new_with_namespace(word_name)
+
+        # collocations
+        colls = []
+        coll = Collocation.get_by_name_with_namespace(word_name)
+        if coll is not None:
+            colls.append(coll.collocation)
+        if word.conjugative is not None:
+            for conj in word.conjugative:
+                coll = Collocation.get_by_name_with_namespace(conj)
+                if coll is not None:
+                    colls.append(coll.collocation)
+
         template_values = {
             'word': word,
+            'collocations': '\n'.join(colls)
         }
         template = JINJA_ENVIRONMENT.get_template('word.html')
         self.response.write(template.render(template_values))
@@ -221,8 +233,8 @@ class UpdateCollocationHandler(webapp2.RequestHandler):
     def get(self):
         documents = Document.get_all_with_namespace()
         text = ''
+        collocations = defaultdict(list)
         for document in documents:
-            collocations = defaultdict(list)
             text = re.sub(r'[\r\n]', ' ', document.content)
             collocations = Processor.build_collocation(text, collocations)
 

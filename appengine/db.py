@@ -204,19 +204,24 @@ class Collocation(ndb.Model):
         return coll
 
     @classmethod
-    def get_by_name_or_new_with_namespace(cls, name):
+    def get_by_name_with_namespace(cls, name):
         user = users.get_current_user()
         previous_namespace = namespace_manager.get_namespace()
         try:
             namespace_manager.set_namespace(user.email().translate(NAMESPACE_TRANS))
             qry = Collocation.query(Collocation.name == name)
             coll = qry.get()
-            if coll is None:
-                coll = Collocation()
-                coll.name = name
-                coll.content = ''
         finally:
             namespace_manager.set_namespace(previous_namespace)
+        return coll
+
+    @classmethod
+    def get_by_name_or_new_with_namespace(cls, name):
+        coll = cls.get_by_name_with_namespace(name)
+        if coll is None:
+            coll = Collocation()
+            coll.name = name
+            coll.content = ''
         return coll
 
     @classmethod
